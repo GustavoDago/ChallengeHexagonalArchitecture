@@ -1,5 +1,6 @@
 package com.SOOFT.ChallengeBackendSOOFT.infrastructure.inputAdapter.rest.controller;
 
+import com.SOOFT.ChallengeBackendSOOFT.domain.exceptions.EmpresaYaExisteException;
 import com.SOOFT.ChallengeBackendSOOFT.domain.model.Empresa;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.in.EmpresaService;
 import com.SOOFT.ChallengeBackendSOOFT.infrastructure.inputAdapter.rest.dto.EmpresaRequest;
@@ -32,8 +33,12 @@ public class EmpresaController {
 
     @PostMapping
     public ResponseEntity<?> adherirEmpresa(@Valid @RequestBody EmpresaRequest empresaRequest){
-        Empresa empresa = empresaRequest.toDomain();
-        Empresa nuevaEmpresa = empresaService.adherirEmpresa(empresa);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaEmpresa);
+        try {
+            Empresa empresa = empresaRequest.toDomain();
+            Empresa nuevaEmpresa = empresaService.adherirEmpresa(empresa);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevaEmpresa);
+        } catch (EmpresaYaExisteException e) {
+            throw e;
+        }
     }
 }
