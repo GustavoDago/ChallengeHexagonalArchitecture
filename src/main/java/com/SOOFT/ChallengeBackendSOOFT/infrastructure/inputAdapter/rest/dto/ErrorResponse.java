@@ -1,4 +1,4 @@
 package com.SOOFT.ChallengeBackendSOOFT.infrastructure.inputAdapter.rest.dto;
 
-public class ErrorResponse {
+public record ErrorResponse(String message) {
 }

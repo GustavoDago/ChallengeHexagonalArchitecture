@@ -11,12 +11,13 @@ public class Transferencia {
     private String cuentaCredito;
     private LocalDate fecha;
 
-    public Transferencia(Long id, BigDecimal importe, String idEmpresa, String cuentaDebito, String cuentaCredito) {
+    public Transferencia(Long id, BigDecimal importe, String idEmpresa, String cuentaDebito, String cuentaCredito, LocalDate fecha) {
         this.id = id;
         this.importe = importe;
         this.idEmpresa = idEmpresa;
         this.cuentaDebito = cuentaDebito;
         this.cuentaCredito = cuentaCredito;
+        this.fecha = fecha;
     }
 
     public Long getId() {
@@ -57,5 +58,13 @@ public class Transferencia {
 
     public void setCuentaCredito(String cuentaCredito) {
         this.cuentaCredito = cuentaCredito;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
     }
 }

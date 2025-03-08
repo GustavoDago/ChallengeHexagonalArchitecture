@@ -7,12 +7,13 @@ import com.SOOFT.ChallengeBackendSOOFT.domain.model.Transferencia;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.in.EmpresaService;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.out.EmpresaRepository;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.out.TransferenciaRepository;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+@Service
 public class EmpresaServiceImpl implements EmpresaService {
 
     private final EmpresaRepository empresaRepository;
