@@ -7,6 +7,12 @@ public class Empresa {
     private String razonSocial;
     private LocalDate fechaAdhesion;
 
+    public Empresa(String CUIT, String razonSocial, LocalDate fechaAdhesion) {
+        this.CUIT = CUIT;
+        this.razonSocial = razonSocial;
+        this.fechaAdhesion = fechaAdhesion;
+    }
+
     public String getCUIT() {
         return CUIT;
     }
