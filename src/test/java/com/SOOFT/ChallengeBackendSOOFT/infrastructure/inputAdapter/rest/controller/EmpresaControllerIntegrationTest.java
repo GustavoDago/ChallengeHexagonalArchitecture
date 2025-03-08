@@ -17,9 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest // prueba de integración
 @AutoConfigureMockMvc
@@ -97,5 +95,38 @@ class EmpresaControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(empresaRequest2)))
                 .andExpect(status().isBadRequest()); //  400 Bad Request, porque la razon social es invalida
+    }
+
+    @Test
+    void obtenerEmpresasAdheridasUltimoMes_ShouldReturnListOfEmpresas() throws Exception {
+        // Arrange: Insertar algunas empresas en la base de datos
+        LocalDate today = LocalDate.now();
+        LocalDate firstDayOfLastMonth = today.minusMonths(1).withDayOfMonth(1);
+        LocalDate lastDayOfLastMonth = today.minusMonths(1).withDayOfMonth(today.minusMonths(1).lengthOfMonth());
+
+        Empresa empresa1 = new Empresa("11111111111", "Empresa 1", firstDayOfLastMonth);
+        Empresa empresa2 = new Empresa("22222222222", "Empresa 2", lastDayOfLastMonth);
+        Empresa empresa3 = new Empresa("33333333333", "Empresa 3", today); // Adherida este mes (no debería aparecer)
+
+        empresaService.adherirEmpresa(empresa1); //Se crean, para que estén en la BD
+        empresaService.adherirEmpresa(empresa2);
+        empresaService.adherirEmpresa(empresa3);
+
+        // Act & Assert
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/empresas/adheridas-ultimo-mes"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].cuit").value("11111111111")) //Verificamos que devuelve las empresas correctas
+                .andExpect(jsonPath("$[1].cuit").value("22222222222"))
+                .andExpect(jsonPath("$.length()").value(2)); //  2 empresas
+    }
+
+    @Test
+    void obtenerEmpresasAdheridasUltimoMes_ShouldReturnEmptyList_WhenNoEmpresas() throws Exception {
+        // Act & Assert
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/empresas/adheridas-ultimo-mes"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.length()").value(0)); //  0 empresas
     }
 }
