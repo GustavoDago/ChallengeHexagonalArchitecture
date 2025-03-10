@@ -1,4 +1,4 @@
-package com.SOOFT.ChallengeBackendSOOFT.domain.usecase;
+package com.SOOFT.ChallengeBackendSOOFT.application.service;
 
 import com.SOOFT.ChallengeBackendSOOFT.domain.exceptions.DatosInvalidosException;
 import com.SOOFT.ChallengeBackendSOOFT.domain.exceptions.EmpresaYaExisteException;
