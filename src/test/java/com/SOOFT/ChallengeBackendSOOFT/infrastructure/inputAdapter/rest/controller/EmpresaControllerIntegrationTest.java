@@ -118,9 +118,10 @@ class EmpresaControllerIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/empresas/adheridas-ultimo-mes"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].cuit").value("11111111111")) //Verificamos que devuelve las empresas correctas
-                .andExpect(jsonPath("$[1].cuit").value("22222222222"))
-                .andExpect(jsonPath("$.length()").value(2)); //  2 empresas
+                .andExpect(jsonPath("$.content").isNotEmpty()) //Verifica primero que haya contenido
+                .andExpect(jsonPath("$.content[?(@.cuit == '11111111111')]").exists())
+                .andExpect(jsonPath("$.content[?(@.cuit == '22222222222')]").exists())
+                .andExpect(jsonPath("$.totalElements").value(2)); //Verificar la cantidad TOTAL de elementos
     }
 
     @Test
@@ -129,6 +130,6 @@ class EmpresaControllerIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/empresas/adheridas-ultimo-mes"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(0)); //  0 empresas
+                .andExpect(jsonPath("$.content").isEmpty()); // Verifica que el array 'content' esté vacío
     }
 }

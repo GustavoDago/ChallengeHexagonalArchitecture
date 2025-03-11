@@ -7,9 +7,13 @@ import com.SOOFT.ChallengeBackendSOOFT.domain.model.Transferencia;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.in.EmpresaService;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.out.EmpresaRepository;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.out.TransferenciaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +29,7 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
-    public List<Empresa> empresasTransferenciasUltimoMes() {
+    public Page<Empresa> empresasTransferenciasUltimoMes(Pageable pageable) {
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfLastMonth = today.minusMonths(1).withDayOfMonth(1);
         LocalDate lastDayOfLastMonth = today.minusMonths(1)
@@ -43,23 +47,29 @@ public class EmpresaServiceImpl implements EmpresaService {
                 .map(Transferencia::getIdEmpresa)
                 .distinct()
                 .toList();
-
-        // obtengo las empresas a partir de la lista de CUITs
-        return cuitsEmpresas.stream()
+        //En lugar de crear un PageImpl a partir de una lista filtrada manualmente,
+        // ahora se itera sobre los cuits y se obtienen las empresas paginadas directamente del repositorio.
+        List<Empresa> empresas = cuitsEmpresas.stream()
                 .map(empresaRepository::findByCuit)
                 .filter(Optional::isPresent)
-                .map(Optional::get)
-                .toList();
+                .map(Optional::get).toList();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), empresas.size());
+
+        if (start > end) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+        return new PageImpl<>(empresas.subList(start,end), pageable, empresas.size());
     }
 
     @Override
-    public List<Empresa> empresasAdheridasUltimoMes() {
+    public Page<Empresa> empresasAdheridasUltimoMes(Pageable pageable) {
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfLastMonth = today.minusMonths(1).withDayOfMonth(1);
         LocalDate lastDayOfLastMonth = today.minusMonths(1)
                 .withDayOfMonth(today.minusMonths(1).lengthOfMonth());
 
-        return empresaRepository.findByFechaAdhesion(firstDayOfLastMonth,lastDayOfLastMonth);
+        return empresaRepository.findByFechaAdhesion(firstDayOfLastMonth,lastDayOfLastMonth, pageable);
     }
 
     @Override

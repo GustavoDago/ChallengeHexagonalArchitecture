@@ -66,9 +66,12 @@ public class EmpresaControllerIntegrationTestMock {
     @Test
     void obtenerEmpresasAdheridasUltimoMes_retornaListaCorrecta() throws Exception {
 
-        mockMvc.perform(get("/api/empresas/adheridas-ultimo-mes"))
+        mockMvc.perform(get("/api/empresas/adheridas-ultimo-mes")
+                .param("page", "0") // Solicita la primera página
+                .param("size", "10")) // Con un tamaño de página de 10
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.cuit == '987654321')]").exists());//Verifica si la empresa fuera del mes no existe
+                .andExpect(jsonPath("$.content").isNotEmpty())  //Verifica que la lista no esté vacía
+                .andExpect(jsonPath("$.content[0].cuit").value("987654321")); //Verifica el CUIT
 
     }
 }

@@ -4,6 +4,8 @@ import com.SOOFT.ChallengeBackendSOOFT.domain.exceptions.EmpresaYaExisteExceptio
 import com.SOOFT.ChallengeBackendSOOFT.domain.model.Empresa;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.in.EmpresaService;
 import com.SOOFT.ChallengeBackendSOOFT.infrastructure.inputAdapter.rest.dto.EmpresaRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +22,14 @@ public class EmpresaController {
     }
 
     @GetMapping("/transferencias-ultimo-mes")
-    public ResponseEntity<List<Empresa>> obtenerEmpresasConTransferenciasUltimoMes(){
-        List<Empresa> list = empresaService.empresasTransferenciasUltimoMes();
+    public ResponseEntity<Page<Empresa>> obtenerEmpresasConTransferenciasUltimoMes(Pageable pageable){
+        Page<Empresa> list = empresaService.empresasTransferenciasUltimoMes(pageable);
         return ResponseEntity.ok(list);
     }
 
     @GetMapping("/adheridas-ultimo-mes")
-    public ResponseEntity<List<Empresa>> obtenerEmpresasAdheridasUltimoMes(){
-        List<Empresa> list = empresaService.empresasAdheridasUltimoMes();
+    public ResponseEntity<Page<Empresa>> obtenerEmpresasAdheridasUltimoMes(Pageable pageable){
+        Page<Empresa> list = empresaService.empresasAdheridasUltimoMes(pageable);
         return ResponseEntity.ok(list);
     }
 
