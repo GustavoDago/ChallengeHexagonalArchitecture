@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
-public interface EmpresaRepositoryImpl extends EmpresaRepository, JpaRepository<EmpresaEntity,String> {
+public interface DevEmpresaRepositoryImpl extends EmpresaRepository, JpaRepository<EmpresaEntity,String> {
     @Override
     default Empresa save(Empresa empresa){
         EmpresaEntity entity = EmpresaEntity.fromDomain(empresa); //Se convierte a la Entidad de persistencia

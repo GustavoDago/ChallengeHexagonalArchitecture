@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 @Repository
-public interface TransferenciaRepositoryImpl extends TransferenciaRepository, JpaRepository<TransferenciaEntity, Long> {
+public interface DevTransferenciaRepositoryImpl extends TransferenciaRepository, JpaRepository<TransferenciaEntity, Long> {
 
     @Override
     default List<Transferencia> findByFechaBetweenAndIdEmpresa(LocalDate startDate, LocalDate endDate, String cuitEmpresa){
