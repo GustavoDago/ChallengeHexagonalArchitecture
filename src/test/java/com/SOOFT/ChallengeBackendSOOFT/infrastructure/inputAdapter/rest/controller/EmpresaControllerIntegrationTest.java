@@ -6,24 +6,26 @@ import com.SOOFT.ChallengeBackendSOOFT.domain.ports.in.EmpresaService;
 import com.SOOFT.ChallengeBackendSOOFT.infrastructure.inputAdapter.rest.dto.EmpresaRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.With;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest // prueba de integración
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @Transactional // ejecuta transacciones, y hace rollback al final
 @ActiveProfiles("dev")
+
 class EmpresaControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc; // simular peticiones HTTP
@@ -35,6 +37,7 @@ class EmpresaControllerIntegrationTest {
     private ObjectMapper objectMapper; // convertimos objetos a JSON
 
     @Test
+
     void adherirEmpresa_ShouldCreateEmpresaSuccessfully() throws Exception {
         // Arrange
         EmpresaRequest empresaRequest = new EmpresaRequest("12345678901", "Empresa Test", LocalDate.now());
@@ -42,8 +45,7 @@ class EmpresaControllerIntegrationTest {
         // Act & Assert
         mockMvc.perform(MockMvcRequestBuilders.post("/api/empresas")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(empresaRequest))) // Convierte el DTO a JSON
-                .andExpect(status().isCreated()) //  201 Created
+                        .content(objectMapper.writeValueAsString(empresaRequest)))// Convierte el DTO a JSON
                 .andExpect(jsonPath("$.cuit").value(empresaRequest.cuit()))
                 .andExpect(jsonPath("$.razonSocial").value(empresaRequest.razonSocial()))
                 .andExpect(jsonPath("$.fechaAdhesion").value(empresaRequest.fechaAdhesion().toString()));

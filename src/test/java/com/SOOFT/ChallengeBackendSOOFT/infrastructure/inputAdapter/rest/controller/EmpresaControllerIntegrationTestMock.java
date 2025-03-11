@@ -6,6 +6,8 @@ import com.SOOFT.ChallengeBackendSOOFT.infrastructure.inputAdapter.rest.dto.Empr
 import com.SOOFT.ChallengeBackendSOOFT.infrastructure.outputAdapter.persistence.repository.MockEmpresaRepositoryImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.bucket4j.Bucket;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,8 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
@@ -22,8 +22,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+
+
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("mock") // Activa el perfil "mock"
 public class EmpresaControllerIntegrationTestMock {
     @Autowired
@@ -34,6 +36,14 @@ public class EmpresaControllerIntegrationTestMock {
 
     @Autowired
     private MockEmpresaRepositoryImpl mockEmpresaRepository;
+
+    @Autowired
+    private Bucket bucket;
+
+    @BeforeEach
+    void setUp() {
+        bucket.reset(); //Limpia el bucket antes de cada test
+    }
 
     @Test
     void adherirEmpresa_conDatosValidos_retornaCreated() throws Exception {
