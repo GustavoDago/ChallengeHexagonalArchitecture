@@ -7,9 +7,13 @@ import com.SOOFT.ChallengeBackendSOOFT.domain.model.Transferencia;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.in.EmpresaService;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.out.EmpresaRepository;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.out.TransferenciaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +29,7 @@ public class EmpresaServiceImpl implements EmpresaService {
     }
 
     @Override
-    public List<Empresa> empresasTransferenciasUltimoMes() {
+    public Page<Empresa> empresasTransferenciasUltimoMes(Pageable pageable) {
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfLastMonth = today.minusMonths(1).withDayOfMonth(1);
         LocalDate lastDayOfLastMonth = today.minusMonths(1)
@@ -45,21 +49,41 @@ public class EmpresaServiceImpl implements EmpresaService {
                 .toList();
 
         // obtengo las empresas a partir de la lista de CUITs
-        return cuitsEmpresas.stream()
+        List<Empresa> empresas = cuitsEmpresas.stream()
                 .map(empresaRepository::findByCuit)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
+
+        // Aplicar paginación
+        int start = (int) pageable.getOffset(); // Calcula el índice de inicio según la página solicitada
+        int end = Math.min((start + pageable.getPageSize()), empresas.size());  // Calcula el índice de fin, asegurándose de no exceder el tamaño de la lista
+        List<Empresa> empresasPaginadas = new ArrayList<>();
+
+        if (start <= end) {  // Verificamos que haya elementos para paginar
+            empresasPaginadas = empresas.subList(start, end); // Obtenemos la sublista para la página actual
+        }
+        return new PageImpl<>(empresasPaginadas, pageable, empresas.size()); // Creamos PageImpl con los datos paginados, la información de paginación y el total de elementos
     }
 
     @Override
-    public List<Empresa> empresasAdheridasUltimoMes() {
+    public Page<Empresa> empresasAdheridasUltimoMes(Pageable pageable) {
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfLastMonth = today.minusMonths(1).withDayOfMonth(1);
         LocalDate lastDayOfLastMonth = today.minusMonths(1)
                 .withDayOfMonth(today.minusMonths(1).lengthOfMonth());
 
-        return empresaRepository.findByFechaAdhesion(firstDayOfLastMonth,lastDayOfLastMonth);
+        List<Empresa> empresas = empresaRepository.findByFechaAdhesion(firstDayOfLastMonth,lastDayOfLastMonth);
+
+        // Aplicar paginación
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), empresas.size());
+        List<Empresa> empresasPaginadas = new ArrayList<>();
+
+        if (start <= end) {
+            empresasPaginadas = empresas.subList(start, end);
+        }
+        return new PageImpl<>(empresasPaginadas, pageable, empresas.size());
     }
 
     @Override

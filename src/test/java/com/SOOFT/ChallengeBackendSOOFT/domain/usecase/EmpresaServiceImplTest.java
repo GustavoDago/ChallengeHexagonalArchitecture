@@ -12,7 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -110,16 +114,20 @@ class EmpresaServiceImplTest {
         Empresa empresa2 = new Empresa("2222", "Empresa 2", lastDayOfLastMonth);
         List<Empresa> empresasAdheridas = List.of(empresa1, empresa2);
 
+        Page<Empresa> empresasPage = new PageImpl<>(empresasAdheridas);
+        Pageable pageable = Pageable.unpaged();
+
         when(empresaRepository.findByFechaAdhesion(firstDayOfLastMonth, lastDayOfLastMonth))
                 .thenReturn(empresasAdheridas);
 
         // Act
-        List<Empresa> result = empresaService.empresasAdheridasUltimoMes();
+        Page<Empresa> result = empresaService.empresasAdheridasUltimoMes(pageable);
 
         // Assert
-        assertEquals(2, result.size());
-        assertEquals(empresa1.getCUIT(), result.get(0).getCUIT());
-        assertEquals(empresa2.getCUIT(), result.get(1).getCUIT());
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(empresa1, result.getContent().get(0));
+        assertEquals(empresa2, result.getContent().get(1));
 
         verify(empresaRepository).findByFechaAdhesion(firstDayOfLastMonth, lastDayOfLastMonth);
     }
@@ -133,10 +141,15 @@ class EmpresaServiceImplTest {
 
         Empresa empresa1 = new Empresa("1111", "Empresa 1", LocalDate.now().minusMonths(2)); //Adherida hace 2 meses
         Empresa empresa2 = new Empresa("2222", "Empresa 2", LocalDate.now().minusMonths(3)); //Adherida hace 3 meses
-        Transferencia transferencia1 = new Transferencia(1L,  new java.math.BigDecimal(100), "1111", "C1", "C2", firstDayOfLastMonth);
-        Transferencia transferencia2 = new Transferencia(2L, new java.math.BigDecimal(200), "2222", "C3", "C4", lastDayOfLastMonth);
-        Transferencia transferencia3 = new Transferencia(3L, new java.math.BigDecimal(300), "1111", "C5", "C6", firstDayOfLastMonth); //Otra transf de empresa 1
+        Transferencia transferencia1 = new Transferencia(1L,  new BigDecimal(100), "1111", "C1", "C2", firstDayOfLastMonth);
+        Transferencia transferencia2 = new Transferencia(2L, new BigDecimal(200), "2222", "C3", "C4", lastDayOfLastMonth);
+        Transferencia transferencia3 = new Transferencia(3L, new BigDecimal(300), "1111", "C5", "C6", firstDayOfLastMonth); //Otra transf de empresa 1
         List<Transferencia> transferenciasUltimoMes = List.of(transferencia1, transferencia2, transferencia3);
+
+        //Usa PageImpl y Pageable
+        Pageable pageable = Pageable.unpaged();
+        List<Empresa> empresas = List.of(empresa1, empresa2);
+        Page<Empresa> empresasPage = new PageImpl<>(empresas);
 
         when(transferenciaRepository.findByFechaBetweenAndIdEmpresa(firstDayOfLastMonth, lastDayOfLastMonth, null))
                 .thenReturn(transferenciasUltimoMes);
@@ -144,12 +157,13 @@ class EmpresaServiceImplTest {
         when(empresaRepository.findByCuit("2222")).thenReturn(Optional.of(empresa2));
 
         // Act
-        List<Empresa> result = empresaService.empresasTransferenciasUltimoMes();
+        Page<Empresa> result = empresaService.empresasTransferenciasUltimoMes(pageable);
 
         // Assert
-        assertEquals(2, result.size()); // Devuelve las dos empresas
-        assertTrue(result.contains(empresa1));
-        assertTrue(result.contains(empresa2));
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements()); // Devuelve las dos empresas
+        assertTrue(result.getContent().contains(empresa1));
+        assertTrue(result.getContent().contains(empresa2));
         verify(transferenciaRepository).findByFechaBetweenAndIdEmpresa(firstDayOfLastMonth, lastDayOfLastMonth, null);
         verify(empresaRepository).findByCuit("1111");
         verify(empresaRepository).findByCuit("2222");
@@ -163,11 +177,15 @@ class EmpresaServiceImplTest {
         LocalDate firstDayOfLastMonth = today.minusMonths(1).withDayOfMonth(1);
         LocalDate lastDayOfLastMonth = today.minusMonths(1).withDayOfMonth(today.minusMonths(1).lengthOfMonth());
 
+        // Usa Page y Pageable
+        Pageable pageable = Pageable.unpaged();
+        Page<Empresa> emptyPage = Page.empty();
+
         when(transferenciaRepository.findByFechaBetweenAndIdEmpresa(firstDayOfLastMonth, lastDayOfLastMonth, null))
                 .thenReturn(List.of()); // Lista vacía
 
         //Act
-        List<Empresa> result = empresaService.empresasTransferenciasUltimoMes();
+        Page<Empresa> result = empresaService.empresasTransferenciasUltimoMes(pageable);
 
         //Assert
         assertTrue(result.isEmpty());
@@ -182,16 +200,20 @@ class EmpresaServiceImplTest {
         LocalDate firstDayOfLastMonth = today.minusMonths(1).withDayOfMonth(1);
         LocalDate lastDayOfLastMonth = today.minusMonths(1).withDayOfMonth(today.minusMonths(1).lengthOfMonth());
 
-        Transferencia transferencia1 = new Transferencia(1L, new java.math.BigDecimal(100), "1111", "C1", "C2", firstDayOfLastMonth);
+        Transferencia transferencia1 = new Transferencia(1L, new BigDecimal(100), "1111", "C1", "C2", firstDayOfLastMonth);
 
         List<Transferencia> transferenciasUltimoMes = List.of(transferencia1);
+
+        // Usa Page y Pageable
+        Pageable pageable = Pageable.unpaged();
+        Page<Empresa> emptyPage = Page.empty();
 
         when(transferenciaRepository.findByFechaBetweenAndIdEmpresa(firstDayOfLastMonth, lastDayOfLastMonth, null))
                 .thenReturn(transferenciasUltimoMes);
         when(empresaRepository.findByCuit("1111")).thenReturn(Optional.empty()); // Simulamos que no existe
 
         // Act
-        List<Empresa> result = empresaService.empresasTransferenciasUltimoMes();
+        Page<Empresa> result = empresaService.empresasTransferenciasUltimoMes(pageable);
 
         // Assert
         assertTrue(result.isEmpty()); // La lista debe estar vacía

@@ -3,6 +3,7 @@ package com.SOOFT.ChallengeBackendSOOFT.infrastructure.outputAdapter.persistence
 import com.SOOFT.ChallengeBackendSOOFT.domain.model.Empresa;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.out.EmpresaRepository;
 import com.SOOFT.ChallengeBackendSOOFT.infrastructure.outputAdapter.persistence.entity.EmpresaEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -28,11 +29,11 @@ public interface DevEmpresaRepositoryImpl extends EmpresaRepository, JpaReposito
 
     @Override
     default List<Empresa> findByFechaAdhesion(LocalDate startDate, LocalDate endDate){
-        List<EmpresaEntity> entities = this.findAllByFechaAdhesionBetween(startDate, endDate); //Se busca, utilizando un método custom de JpaRepository
+        Page<EmpresaEntity> entities = this.findAllByFechaAdhesionBetween(startDate, endDate); //Se busca, utilizando un método custom de JpaRepository
         return entities.stream()
                 .map(EmpresaEntity::toDomain) //Se convierte a la entidad de dominio
                 .collect(Collectors.toList());
     }
 
-    List<EmpresaEntity> findAllByFechaAdhesionBetween(LocalDate startDate, LocalDate endDate);
+    Page<EmpresaEntity> findAllByFechaAdhesionBetween(LocalDate startDate, LocalDate endDate);
 }
