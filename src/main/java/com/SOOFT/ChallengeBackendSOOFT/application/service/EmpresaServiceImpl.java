@@ -47,23 +47,19 @@ public class EmpresaServiceImpl implements EmpresaService {
                 .map(Transferencia::getIdEmpresa)
                 .distinct()
                 .toList();
-
-        // obtengo las empresas a partir de la lista de CUITs
+        //En lugar de crear un PageImpl a partir de una lista filtrada manualmente,
+        // ahora se itera sobre los cuits y se obtienen las empresas paginadas directamente del repositorio.
         List<Empresa> empresas = cuitsEmpresas.stream()
                 .map(empresaRepository::findByCuit)
                 .filter(Optional::isPresent)
-                .map(Optional::get)
-                .toList();
+                .map(Optional::get).toList();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), empresas.size());
 
-        // Aplicar paginación
-        int start = (int) pageable.getOffset(); // Calcula el índice de inicio según la página solicitada
-        int end = Math.min((start + pageable.getPageSize()), empresas.size());  // Calcula el índice de fin, asegurándose de no exceder el tamaño de la lista
-        List<Empresa> empresasPaginadas = new ArrayList<>();
-
-        if (start <= end) {  // Verificamos que haya elementos para paginar
-            empresasPaginadas = empresas.subList(start, end); // Obtenemos la sublista para la página actual
+        if (start > end) {
+            return new PageImpl<>(List.of(), pageable, 0);
         }
-        return new PageImpl<>(empresasPaginadas, pageable, empresas.size()); // Creamos PageImpl con los datos paginados, la información de paginación y el total de elementos
+        return new PageImpl<>(empresas.subList(start,end), pageable, empresas.size());
     }
 
     @Override
@@ -73,17 +69,7 @@ public class EmpresaServiceImpl implements EmpresaService {
         LocalDate lastDayOfLastMonth = today.minusMonths(1)
                 .withDayOfMonth(today.minusMonths(1).lengthOfMonth());
 
-        List<Empresa> empresas = empresaRepository.findByFechaAdhesion(firstDayOfLastMonth,lastDayOfLastMonth);
-
-        // Aplicar paginación
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), empresas.size());
-        List<Empresa> empresasPaginadas = new ArrayList<>();
-
-        if (start <= end) {
-            empresasPaginadas = empresas.subList(start, end);
-        }
-        return new PageImpl<>(empresasPaginadas, pageable, empresas.size());
+        return empresaRepository.findByFechaAdhesion(firstDayOfLastMonth,lastDayOfLastMonth, pageable);
     }
 
     @Override

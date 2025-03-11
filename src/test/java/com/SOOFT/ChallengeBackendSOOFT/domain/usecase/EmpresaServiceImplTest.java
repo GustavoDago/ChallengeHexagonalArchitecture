@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
@@ -114,11 +115,11 @@ class EmpresaServiceImplTest {
         Empresa empresa2 = new Empresa("2222", "Empresa 2", lastDayOfLastMonth);
         List<Empresa> empresasAdheridas = List.of(empresa1, empresa2);
 
-        Page<Empresa> empresasPage = new PageImpl<>(empresasAdheridas);
-        Pageable pageable = Pageable.unpaged();
+        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE);
+        Page<Empresa> empresasPage = new PageImpl<>(empresasAdheridas, pageable, empresasAdheridas.size());
 
-        when(empresaRepository.findByFechaAdhesion(firstDayOfLastMonth, lastDayOfLastMonth))
-                .thenReturn(empresasAdheridas);
+        when(empresaRepository.findByFechaAdhesion(firstDayOfLastMonth, lastDayOfLastMonth,pageable))
+                .thenReturn(empresasPage);
 
         // Act
         Page<Empresa> result = empresaService.empresasAdheridasUltimoMes(pageable);
@@ -129,7 +130,7 @@ class EmpresaServiceImplTest {
         assertEquals(empresa1, result.getContent().get(0));
         assertEquals(empresa2, result.getContent().get(1));
 
-        verify(empresaRepository).findByFechaAdhesion(firstDayOfLastMonth, lastDayOfLastMonth);
+        verify(empresaRepository).findByFechaAdhesion(firstDayOfLastMonth, lastDayOfLastMonth,pageable);
     }
 
     @Test
@@ -147,7 +148,7 @@ class EmpresaServiceImplTest {
         List<Transferencia> transferenciasUltimoMes = List.of(transferencia1, transferencia2, transferencia3);
 
         //Usa PageImpl y Pageable
-        Pageable pageable = Pageable.unpaged();
+        Pageable pageable = PageRequest.of(0, 10);;
         List<Empresa> empresas = List.of(empresa1, empresa2);
         Page<Empresa> empresasPage = new PageImpl<>(empresas);
 
@@ -178,7 +179,7 @@ class EmpresaServiceImplTest {
         LocalDate lastDayOfLastMonth = today.minusMonths(1).withDayOfMonth(today.minusMonths(1).lengthOfMonth());
 
         // Usa Page y Pageable
-        Pageable pageable = Pageable.unpaged();
+        Pageable pageable = PageRequest.of(0, 10);;
         Page<Empresa> emptyPage = Page.empty();
 
         when(transferenciaRepository.findByFechaBetweenAndIdEmpresa(firstDayOfLastMonth, lastDayOfLastMonth, null))
@@ -205,7 +206,7 @@ class EmpresaServiceImplTest {
         List<Transferencia> transferenciasUltimoMes = List.of(transferencia1);
 
         // Usa Page y Pageable
-        Pageable pageable = Pageable.unpaged();
+        Pageable pageable = PageRequest.of(0, 10);;
         Page<Empresa> emptyPage = Page.empty();
 
         when(transferenciaRepository.findByFechaBetweenAndIdEmpresa(firstDayOfLastMonth, lastDayOfLastMonth, null))

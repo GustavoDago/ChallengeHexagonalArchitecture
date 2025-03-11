@@ -4,11 +4,11 @@ import com.SOOFT.ChallengeBackendSOOFT.domain.model.Empresa;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.out.EmpresaRepository;
 import com.SOOFT.ChallengeBackendSOOFT.infrastructure.outputAdapter.persistence.entity.EmpresaEntity;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -28,12 +28,10 @@ public interface DevEmpresaRepositoryImpl extends EmpresaRepository, JpaReposito
     }
 
     @Override
-    default List<Empresa> findByFechaAdhesion(LocalDate startDate, LocalDate endDate){
-        Page<EmpresaEntity> entities = this.findAllByFechaAdhesionBetween(startDate, endDate); //Se busca, utilizando un método custom de JpaRepository
-        return entities.stream()
-                .map(EmpresaEntity::toDomain) //Se convierte a la entidad de dominio
-                .collect(Collectors.toList());
+    default Page<Empresa> findByFechaAdhesion(LocalDate startDate, LocalDate endDate, Pageable pageable){
+        Page<EmpresaEntity> entities = this.findAllByFechaAdhesionBetween(startDate, endDate, pageable); //Se busca, utilizando un método custom de JpaRepository
+        return entities.map(EmpresaEntity::toDomain); //Se convierte a Page<Empresa>
     }
 
-    Page<EmpresaEntity> findAllByFechaAdhesionBetween(LocalDate startDate, LocalDate endDate);
+    Page<EmpresaEntity> findAllByFechaAdhesionBetween(LocalDate startDate, LocalDate endDate, Pageable pageable);
 }

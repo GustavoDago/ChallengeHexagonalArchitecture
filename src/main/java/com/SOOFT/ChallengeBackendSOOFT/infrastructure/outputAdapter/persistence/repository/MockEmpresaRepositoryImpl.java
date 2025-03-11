@@ -3,6 +3,9 @@ package com.SOOFT.ChallengeBackendSOOFT.infrastructure.outputAdapter.persistence
 import com.SOOFT.ChallengeBackendSOOFT.domain.model.Empresa;
 import com.SOOFT.ChallengeBackendSOOFT.domain.ports.out.EmpresaRepository;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -36,9 +39,20 @@ public class MockEmpresaRepositoryImpl implements EmpresaRepository {
     }
 
     @Override
-    public List<Empresa> findByFechaAdhesion(LocalDate startDate, LocalDate endDate) {
-        return empresas.stream()
+    public Page<Empresa> findByFechaAdhesion(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        List<Empresa> empresasFiltradas = empresas.stream()
                 .filter(empresa -> empresa.getFechaAdhesion().isAfter(startDate.minusDays(1)) && empresa.getFechaAdhesion().isBefore(endDate.plusDays(1)))
                 .toList();
+        //Simula paginación
+        int pageSize = pageable.isPaged() ? pageable.getPageSize() : empresasFiltradas.size(); //Si no tiene paginación, devuelve el total
+        int pageNumber = pageable.isPaged() ? pageable.getPageNumber() : 0;//Si no hay paginación, devuelve la primer página
+        int start = (int) pageable.getOffset(); //Calcula el offset
+        int end = Math.min((start + pageSize), empresasFiltradas.size());
+
+        if(start > end) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+        List<Empresa> empresasPaginadas = empresasFiltradas.subList(start, end);
+        return new PageImpl<>(empresasPaginadas, pageable, empresasFiltradas.size());
     }
 }
